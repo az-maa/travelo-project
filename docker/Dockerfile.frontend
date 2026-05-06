@@ -1,0 +1,37 @@
+# ════════════════════════════════════════
+# STAGE 1 — Build React
+# ════════════════════════════════════════
+FROM node:20-alpine AS builder
+
+# Bonne pratique 1 : définir un répertoire de travail
+WORKDIR /app
+
+# Bonne pratique 2 : copier package.json en premier (cache des layers)
+COPY package.json package-lock.json ./
+RUN npm ci --silent
+
+# Copier le reste du code source
+COPY . .
+
+# Bonne pratique 3 : build de production
+RUN npm run build
+
+# ════════════════════════════════════════
+# STAGE 2 — Serveur Nginx (image minimale)
+# ════════════════════════════════════════
+FROM nginx:1.28-alpine
+
+# Bonne pratique 4 : supprimer la config nginx par défaut
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Bonne pratique 5 : utiliser une config nginx personnalisée
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Bonne pratique 6 : copier uniquement le build final depuis le stage builder
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Bonne pratique 7 : documenter le port exposé
+EXPOSE 80
+
+# Nginx s'exécute avec son propre utilisateur non-root par défaut
+CMD ["nginx", "-g", "daemon off;"]

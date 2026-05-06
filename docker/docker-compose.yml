@@ -1,0 +1,57 @@
+services:
+
+  travelo-db:
+    image: mysql:8.0
+    container_name: travelo-db
+    restart: unless-stopped
+    networks:
+      - travelo-network
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: travelo
+      MYSQL_USER: travelo_user
+      MYSQL_PASSWORD: travelo_pass
+    volumes:
+      - travelo-mysql-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  travelo-backend:
+    image: 127.0.0.1:5000/travelo-backend:1.0
+    container_name: travelo-backend
+    restart: unless-stopped
+    networks:
+      - travelo-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://travelo-db:3306/travelo
+      SPRING_DATASOURCE_USERNAME: travelo_user
+      SPRING_DATASOURCE_PASSWORD: travelo_pass
+    ports:
+      - "8080:8080"
+    depends_on:
+      travelo-db:
+        condition: service_healthy
+
+  travelo-frontend:
+    image: 127.0.0.1:5000/travelo-frontend:1.0
+    container_name: travelo-frontend
+    restart: unless-stopped
+    networks:
+      - travelo-network
+    ports:
+      - "3000:80"
+    depends_on:
+      - travelo-backend
+
+networks:
+  travelo-network:
+    driver: bridge
+
+volumes:
+  travelo-mysql-data:

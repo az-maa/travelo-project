@@ -1,0 +1,31 @@
+# ════════════════════════════════════════
+# STAGE 1 — Build (Maven + JDK 21 Alpine)
+# ════════════════════════════════════════
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /app
+
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+
+# Override Java release version to 21
+RUN mvn clean package -DskipTests -Dmaven.compiler.release=21
+
+# ════════════════════════════════════════
+# STAGE 2 — Runtime (JRE 21 Alpine)
+# ════════════════════════════════════════
+FROM eclipse-temurin:21-jre-alpine
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /app
+
+COPY --from=builder /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+USER appuser
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
