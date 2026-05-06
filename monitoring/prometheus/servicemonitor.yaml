@@ -1,0 +1,12 @@
+﻿apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: travelo-monitor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: travelo-backend
+  endpoints:
+  - port: http
+    interval: 30s
