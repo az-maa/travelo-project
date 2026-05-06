@@ -1,0 +1,7 @@
+﻿config:
+  auth_enabled: false
+loki:
+  persistence:
+    enabled: false
+promtail:
+  enabled: true
