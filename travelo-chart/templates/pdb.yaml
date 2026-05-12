@@ -1,0 +1,21 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: travelo-helm
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: travelo-frontend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb
+  namespace: travelo-helm
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: travelo-backend
