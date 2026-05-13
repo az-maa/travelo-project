@@ -1,0 +1,25 @@
+﻿apiVersion: skaffold/v4beta6
+kind: Config
+build:
+  artifacts:
+    - image: samoyuom/travelo-backend
+      context: travelo_backend
+      docker:
+        dockerfile: ../docker/Dockerfile.backend
+    - image: samoyuom/travelo-frontend
+      context: travelo_frontend
+      docker:
+        dockerfile: ../docker/Dockerfile.frontend
+  local:
+    push: false
+manifests:
+  rawYaml:
+    - k8s/manifests/namespace.yaml
+    - k8s/manifests/configmap.yaml
+    - k8s/manifests/secret.yaml
+    - k8s/manifests/mysql-statefulset.yaml
+    - k8s/manifests/services.yaml
+    - k8s/manifests/backend-deployment.yaml
+    - k8s/manifests/frontend-deployment.yaml
+deploy:
+  kubectl: {}
